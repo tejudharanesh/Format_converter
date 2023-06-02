@@ -1,0 +1,422 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/css/style_main.css" />
+  </head>
+
+  <body>
+    <main>
+      <div class="big-wrapper light" style="padding: 1.7rem 3rem 3rem;">
+        <img src="/images/shape.png" alt="" class="shape" />
+        <header>
+          <div class="container">
+            <div class="logo">
+              <img src="/images/logo.png" alt="Logo" />
+              <h3>Format Converter</h3>
+            </div>
+
+            <div class="links">
+              <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="/dashboard">My Files</a></li>
+                <li><a href="#"><%= user.email %></a></li>
+                <li><a href="/users/logout" class="btn">Logout</a></li>
+                
+
+              </ul>
+            </div>
+
+            <div class="overlay"></div>  
+          </div>
+        </header>
+        <div class="showcase-area">
+          <div class="container">
+            <div class="left">
+                <div class="container">
+                  <table style="border-spacing: 10px;">
+                    <tr>
+                    <th>
+                  <form method="post" action="/convert/upload" id="uploadForm" enctype="multipart/form-data">
+                    <div class="drag-image">
+                      <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                      <h6>Drag & Drop File Here</h6>
+                      <span>OR</span>
+                      <button type="button" class="abc">Browse File</button>
+                      <input type="file" hidden id="inputFile" name="inputFile">
+                    </div>
+                  </th>
+                  <th>
+                    <div class="dropdown" style="border-radius: 5px; border: 1px solid black;">
+                      <select id="dropdown" style="border-radius: 5px; border: 1px solid black;">
+                        <option value="">Choose Mapping</option>
+                        <% for (let i = 0; i < dropdownValues.length; i++) { %>
+                          <option value="<%= dropdownValues[i] %>" style="border-radius: 5px; border: 1px solid black;"><%= dropdownValues[i] %></option>
+                        <% } %>
+                      </select>
+                    </div>
+                    </th>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="format" id="json" value="json">
+                      <label class="form-check-label" for="json">
+                        CSV to JSON
+                      </label>
+                    </div>
+                    </td>
+                  </tr>
+                    <!-- complete -->
+                    <!-- <tr>
+                      <td colspan="2">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="format" id="xml" checked value="xml">
+                      <label class="form-check-label" for="xml">
+                        CSV to XML
+                      </label>
+                    </div>       
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">
+                    <input type="submit" class="button" value="convert">
+                    </td>
+                    </tr>
+                  </table>
+                  </form>
+                  </div>  
+                </div>
+
+
+            <div class="right">
+              <textarea name="mapping_area" id="mapping_area" cols="30" rows="10" placeholder=""></textarea>
+
+              <br>
+              <br>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+<script>
+const dropArea = document.querySelector(".drag-image"),
+dragText = dropArea.querySelector("h6"),
+button = dropArea.querySelector("button"),
+input = dropArea.querySelector("input");
+let file; 
+
+button.onclick = ()=>{
+  input.click(); 
+}
+
+input.addEventListener("change", function(){
+ 
+  file = this.files[0];
+  dropArea.classList.add("active");
+  viewfile();
+});
+
+dropArea.addEventListener("dragover", (event)=>{
+  event.preventDefault();
+  dropArea.classList.add("active");
+  dragText.textContent = "Release to Upload File";
+});
+
+
+dropArea.addEventListener("dragleave", ()=>{
+  dropArea.classList.remove("active");
+  dragText.textContent = "Drag & Drop to Upload File";
+}); 
+
+dropArea.addEventListener("drop", (event)=>{
+  event.preventDefault(); 
+   
+  file = event.dataTransfer.files[0];
+  viewfile(); 
+});
+
+function viewfile(){
+  let fileType = file.type;   
+  let validExtensions = ["text/csv"];
+  if(validExtensions.includes(fileType)){ 
+    let fileReader = new FileReader(); 
+    fileReader.onload = ()=>{
+      let fileData = fileReader.result; 
+       
+      dropArea.innerHTML = '<p>'+ file.name +'</P>';
+    };
+    fileReader.readAsDataURL(file);
+  }else{
+    alert("This is not a CSV file!");
+    dropArea.classList.remove("active");
+    dragText.textContent = "Drag & Drop to Upload File";
+  }
+}
+
+
+
+    
+    </script>
+    <script src="https://kit.fontawesome.com/a81368914c.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js -->
+   
+  <!-- </body>
+</html> --> 
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/css/style_main.css" />
+  </head>
+
+  <body>
+    <main>
+      <div class="big-wrapper light" style="padding: 1.7rem 3rem 3rem;">
+        <img src="/images/shape.png" alt="" class="shape" />
+        <header>
+          <div class="container">
+            <div class="logo">
+              <img src="/images/logo.png" alt="Logo" />
+              <h3>Format Converter</h3>
+            </div>
+
+            <div class="links">
+              <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="/users/myfiles">My Files</a></li>
+                <li><a href="#"><%= user.email %></a></li>
+                <li><a href="/users/logout" class="btn">Logout</a></li>
+                
+
+              </ul>
+            </div>
+
+            <div class="overlay"></div>  
+          </div>
+        </header>
+        <div class="showcase-area">
+          <div class="container">
+            <div class="left">
+                <div class="container">
+                  <table style="border-spacing: 10px;">
+                    <tr>
+                    <th>
+                  <form method="post" id="csvForm" enctype="multipart/form-data">
+                    <div class="drag-image">
+                      <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                      <h6>Drag & Drop File Here</h6>
+                      <span>OR</span>
+                      <button type="button" class="abc">Browse File</button>
+                      <input type="file" hidden id="csvFile" name="inputFile">
+                    </div>
+                  </th>
+                  <th>
+                    <div class="dropdown" style="border-radius: 5px; border: 1px solid black;">
+                      <select id="dropdown" style="border-radius: 5px; border: 1px solid black;">
+                        <option value="">Choose Mapping</option>
+                        <% for (let i = 0; i < dropdownValues.length; i++) { %>
+                          <option value="<%= dropdownValues[i] %>" style="border-radius: 5px; border: 1px solid black;"><%= dropdownValues[i] %></option>
+                        <% } %>
+                      </select>
+                    </div>
+                    </th>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="format" id="json" value="json" hidden>
+                      <label class="form-check-label" for="json" hidden>
+                        CSV to JSON
+                      </label>
+                    </div>
+                    </td>
+                  </tr>
+                    <!-- complete -->
+                    <tr>
+                      <td colspan="2">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="format" id="xml" value="xml" hidden>
+                      <label class="form-check-label" for="xml" hidden>
+                        CSV to XML
+                      </label>
+                    </div>       
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">
+                    <input type="submit" id="submit" class="button" value="convert">
+                    
+                    </td>
+                    </tr>
+                  </table>
+                  </form>
+                  </div>  
+                </div>
+
+
+            <div class="right" style="padding: 0px;">
+              <table>
+                <tr>
+                  <th style="text-align: center;">MAPPING</th>
+                  <th style="text-align: center;">TEMPLATE</th>
+                </tr>
+                <tr>
+                  <td style="padding: 0px;"><textarea name="mapping_area" id="mapping_area" cols="20" rows="8" style="margin-left: 70px;"></textarea></td>
+                  <td style="padding: 0px;"><textarea name="template_area" id="template_area" cols="20" rows="8" style="margin-left: 70px;"></textarea>
+                  </td>
+                </tr>
+              </table>
+              <br>
+              <br>
+              <br>
+              <button  class="button" id="downloadButton" style="margin-left: 70px;">Download Converted File</button>
+
+              <br>
+              <br>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+<script>
+const dropArea = document.querySelector(".drag-image"),
+dragText = dropArea.querySelector("h6"),
+button = dropArea.querySelector("button"),
+input = dropArea.querySelector("input");
+let file; 
+
+button.onclick = ()=>{
+  input.click(); 
+}
+
+input.addEventListener("change", function(){
+ 
+  file = this.files[0];
+  dropArea.classList.add("active");
+  viewfile();
+});
+
+dropArea.addEventListener("dragover", (event)=>{
+  event.preventDefault();
+  dropArea.classList.add("active");
+  dragText.textContent = "Release to Upload File";
+});
+
+
+dropArea.addEventListener("dragleave", ()=>{
+  dropArea.classList.remove("active");
+  dragText.textContent = "Drag & Drop to Upload File";
+}); 
+
+dropArea.addEventListener("drop", (event)=>{
+  event.preventDefault(); 
+   
+  file = event.dataTransfer.files[0];
+  viewfile(); 
+});
+
+function viewfile(){
+  let fileType = file.type;   
+  let validExtensions = ["text/csv"];
+  if(validExtensions.includes(fileType)){ 
+    let fileReader = new FileReader(); 
+    fileReader.onload = ()=>{
+      let fileData = fileReader.result; 
+       
+      dropArea.innerHTML = '<p>'+ file.name +'</P>';
+    };
+    fileReader.readAsDataURL(file);
+  }else{
+    alert("This is not a CSV file!");
+    dropArea.classList.remove("active");
+    dragText.textContent = "Drag & Drop to Upload File";
+  }
+}
+
+// Assuming you have a dropdown element with id "myDropdown"
+const dropdown = document.getElementById('dropdown');
+const textarea = document.getElementById('mapping_area');
+const radiobutton1 = document.getElementById('json');
+const radiobutton2 = document.getElementById('xml');
+const templatearea = document.getElementById('template_area');
+
+dropdown.addEventListener('change', () => {
+  const selectedValue = dropdown.value;
+
+  // Send the selected value to the server
+  fetch('/users/processdropdown', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ selectedValue })
+  })
+    .then(response => response.json())
+    .then(result => {
+      // Handle the result returned from the server
+      const fetchedValue = result.fetched_value;
+      const targetFormat = result.targetFormat;
+      const template = result.template;
+      textarea.value = '';
+      textarea.value += fetchedValue;
+      templatearea.value = '';
+      templatearea.value += template;
+      document.getElementById('submit').value = 'Convert to  ' + targetFormat.toUpperCase();
+      // textarea.value += '\n\n';
+      // textarea.value += 'CSV --> ';
+      // textarea.value += targetFormat;
+      if(targetFormat == 'json'){
+      radiobutton1.click();
+      }
+      else if(targetFormat == 'xml'){
+        radiobutton2.click();
+
+      }
+
+      // Update the UI with the result
+      // ...
+    })
+    .catch(error => {
+      // Handle any errors that occur during the request
+      console.error(error);
+    });
+});
+
+
+    </script>
+    <script src="https://kit.fontawesome.com/a81368914c.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="/js/conversion.js"></script>
+    <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js -->
+   
+  </body>
+</html>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/css/style_main.css" />
+</head>
+
+<body>
+  <main>
+    <div class="big-wrapper light">
+      <img src="/images/shape.png" alt="" class="shape" />
+
+      <header style=" transition: 0.2s; ">
+        <div class="container">
+          <div class="logo">
+            <img src="/images/logo.png" alt="Logo" />
+            <h3>Format Converter</h3>
+          </div>
+          <div class="links">
+            <ul>
+              <li><a href="/">Home</a></li>
+              <li><a href="#">About Us</a></li>
+              <li><a href="/users/myfiles">My Files</a></li>
+              <li><a href="#">
+                  <%= user.email %>
+                </a></li>
+              <li><a href="/users/logout" class="btn">Logout</a></li>
+            </ul>
+          </div>
+
+          <div class="overlay"></div>
+        </div>
+      </header>
+      <div class="showcase-area">
+        <div class="container">
+          <div class="left">
+            <div class="container" style="margin-left: 30px; margin-top: 0px;">
+              <form style="display: inline;">
+                <div class="drag-image" style="margin-left: 30px;">
+                  <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                  <h6>Drag & Drop CSV File</h6>
+                  <span>OR</span>
+                  <button type="button" class="abc">Browse File</button>
+                  <input type="file" hidden id="csvFile" name="inputcsv" accept=".csv">
+                </div>
+                <br>
+                <div class="drag-image" style="margin-left: 30px;">
+                  <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                  <h6>Drag & Drop JSON/XML File</h6>
+                  <span>OR</span>
+                  <button type="button" class="abc">Browse File</button>
+                  <input type="file" hidden id="jsonXmlFile" name="inputjsonxml" accept=".json, .xml">
+                </div>
+                <br>
+                <!-- <input type="file" id="csvFile" accept=".csv">
+                         <input type="file" id="jsonXmlFile" accept=".json, .xml"> -->
+                <input type="button" class="button" value="Display headers" onclick="processFiles()"
+                  style="margin-left: 45px;">
+
+              </form>
+            </div>
+          </div>
+
+
+          <div class="right" style="background-color: rgb(240, 255, 255);">
+
+            <table id="header_text" hidden>
+              <tr">
+                <th style="text-align: center; padding-left: 100px;">CSV</th>
+                <th style="text-align: center; padding-left: 150px;">JSON/XML</th>
+                </tr>
+            </table>
+            <div class="columns-container" style="margin-top: 0px; padding-top: 0px;">
+              <div class="column1 targetElement" id="column1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+
+              <div class="column2" id="column2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            </div>
+            <br>
+            <button class="button" id="col3" onclick="displayDictionary()" style="margin-left: 150px;">Display
+              mapping</button>
+            <form action="/users/create" method="post">
+              <input type="text" name="useremail" value="<%= user.email %>" hidden>
+
+              <textarea id="output" name="mapping_data" rows="3" cols="40" readonly hidden
+                style="margin-left: 80px; margin-top: 2px;""></textarea><br>
+                <input type=" text" placeholder="enter mapping name" name="mapping_name" id="mapping_name"
+                style="margin-left: 150px;" hidden>
+                <textarea name="templateArea" id="template_area" cols="30" rows="10" style="margin-left: 70px;" hidden></textarea>
+              <input type="text" name="targetFormat" id="targetformat" hidden>
+              <textarea id="template" name="template" rows="3" cols="40" hidden></textarea>
+              <button type="submit" class="button create_mapping" id="create_mapping" hidden
+                style="margin-left: 150px;">Add mapping</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+
+
+    var csv_file;
+    var json_xml_file;
+    var jsonTemplate;
+    var xmlTemplate;
+    var templatearea = document.getElementById('template');
+    document.getElementById("csvFile").addEventListener("change", function (event) {
+      csv_file = event.target.files[0];
+    });
+    document.getElementById("jsonXmlFile").addEventListener("change", function (event) {
+      json_xml_file = event.target.files[0];
+      console.log("File Type:", json_xml_file.type);
+      file_name = event.target.files[0].name;
+      const target_format = file_name.split(".").pop();
+
+      document.getElementById("targetformat").value = target_format;
+    });
+
+    var x = document.getElementById('column1');
+    var y = document.getElementById('column2');
+    var z = document.getElementById('col3');
+    var a = document.getElementById('output');
+    x.style.visibility = 'hidden';
+    y.style.visibility = 'hidden';
+    z.style.visibility = 'hidden';
+    // a.style.visibility = 'hidden';
+
+    var dictionary = {}; // Initialize an empty dictionary
+    var valuesArray1 = []; // Array of values for the first column
+    var valuesArray2 = []; // Array of values for the second column
+
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    function drag(event) {
+      event.dataTransfer.setData("text", event.target.id);
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      var data = event.dataTransfer.getData("text");
+      var droppedElement = document.getElementById(data);
+
+      // Get the value and ID of the dropped element
+      var value = droppedElement.innerText;
+      var id = droppedElement.id;
+
+      // Get the ID of the target column
+      var targetColumnId = event.target.id;
+
+      // Get the index of the dropped element
+      var index = parseInt(id.replace("value", "")) - 1;
+
+      // Get the value from the corresponding valuesArray based on the target column
+      if (targetColumnId === "column1") {
+        value = valuesArray1[index];
+      } else if (targetColumnId === "column2") {
+        value = valuesArray2[index];
+      }
+
+      // Update the dictionary with the associated value and key
+      dictionary[targetColumnId] = value;
+
+      event.target.appendChild(droppedElement);
+    }
+
+    var outputDict = {}; // Initialize an empty dictionary for storing the output
+
+    function displayDictionary() {
+
+      document.getElementById("output").hidden = false;
+      document.getElementById("create_mapping").hidden = false;
+      document.getElementById("mapping_name").hidden = false;
+
+
+      var outputField = document.getElementById("output");
+      var csvHeaders = valuesArray1.map(function (value, index) {
+        return { id: "value" + (index + 1), value: value };
+      });
+
+      var csvHeaderDictionary = {};
+
+      csvHeaders.forEach(function (header) {
+        if (dictionary[header.id]) {
+          csvHeaderDictionary[header.value] = dictionary[header.id];
+        }
+      });
+
+      outputField.value = JSON.stringify(csvHeaderDictionary, null, 2);
+
+      outputDict = csvHeaderDictionary; // Store the dictionary in outputDict
+
+      console.log(outputDict); // outputDict has the value of mapping
+    }
+
+    // function extractTopLevelHeaders(data) {
+    //   const headers = [];
+    //   if (typeof data === 'object' && data !== null) {
+    //     if (Array.isArray(data)) {
+    //       headers.push(...extractTopLevelHeaders(data[0]));
+    //     } else {
+    //       for (const key in data) {
+    //         headers.push(key);
+
+    //         if (typeof data[key] === 'object' && data[key] !== null) {
+    //           headers.push(...extractTopLevelHeaders(data[key]));
+    //         }
+    //       }
+    //     }
+    //   }
+    //   return [...new Set(headers)];
+    // }
+
+    //extracting jsonHeaders
+    function extractTopLevelHeaders(data, parentName = null, isNestedArray = false) {
+      const headers = [];
+
+      if (typeof data === 'object' && data !== null) {
+        if (Array.isArray(data)) {
+          if (!isNestedArray) {
+            const headerName = parentName || 'array';
+            headers.push(headerName);
+            headers.push(...extractTopLevelHeaders(data[0], headerName, true));
+          }
+        } else {
+          for (const key in data) {
+            const headerName = parentName ? `${parentName}.${key}` : key;
+            headers.push(headerName);
+
+            if (typeof data[key] === 'object' && data[key] !== null) {
+              headers.push(...extractTopLevelHeaders(data[key], headerName));
+            }
+          }
+        }
+      }
+      return [...new Set(headers)];
+    }
+
+    //extracting xml Headers
+    // function extractHeaders(xmlNode) {
+    //   const headers = [];
+
+    //   if (xmlNode.nodeType === Node.ELEMENT_NODE) {
+    //     headers.push(xmlNode.nodeName);
+
+    //     const childElements = xmlNode.children;
+    //     for (let i = 0; i < childElements.length; i++) {
+    //       const child = childElements[i];
+    //       const childHeaders = extractHeaders(child);
+    //       headers.push(...childHeaders);
+    //     }
+    //   }
+    //   console.log(headers);
+    //   return headers;
+    // }
+
+    function extractHeaders(xmlNode, parentHeaders = []) {
+      const headers = [];
+      if (xmlNode.nodeType === Node.ELEMENT_NODE) {
+        const currentHeader = xmlNode.nodeName;
+        const currentHeaders = [...parentHeaders, currentHeader];
+        headers.push(currentHeaders.join("."));
+
+        const childElements = xmlNode.children;
+        for (let i = 0; i < childElements.length; i++) {
+          const child = childElements[i];
+          const childHeaders = extractHeaders(child, currentHeaders);
+          headers.push(...childHeaders);
+        }
+      }
+      return headers;
+    }
+
+
+
+
+    //extracting xml structure
+    function extractStructure(xmlNode, indent = '') {
+      let structure = '';
+
+      if (xmlNode.nodeType === Node.ELEMENT_NODE) {
+        const nodeName = xmlNode.nodeName;
+        const childElements = xmlNode.children;
+
+        structure += `${indent}<${nodeName}>`;
+
+        if (childElements.length > 0) {
+          structure += '\n';
+          for (let i = 0; i < childElements.length; i++) {
+            const child = childElements[i];
+            const childStructure = extractStructure(child, indent + '  ');
+            structure += childStructure;
+          }
+          structure += `${indent}`;
+        }
+
+        structure += `</${nodeName}>\n`;
+      }
+      return structure;
+    }
+
+    //extracting json structure
+    function storeStructure(obj) {
+      var template = {};
+      for (var key in obj) {
+        if (Array.isArray(obj[key])) {
+          template[key] = []; // Assign empty array for headers containing an array
+        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+          template[key] = storeStructure(obj[key]); // Recursively create template for nested object
+        } else {
+          template[key] = ''; // Assign empty value for non-nested keys
+        }
+      }
+      return template;
+    }
+
+
+
+    function processFiles() {
+      var x = document.getElementById('column1');
+      var y = document.getElementById('column2');
+      var z = document.getElementById('col3');
+      x.style.visibility = 'visible';
+      y.style.visibility = 'visible';
+      z.style.visibility = 'visible';
+      document.getElementById('header_text').hidden = false;
+
+      const csvFile = csv_file;
+      const jsonXmlFile = json_xml_file;
+      //   const csvFile = document.getElementById("csvFile").files[0];
+      //   const jsonXmlFile = document.getElementById("jsonXmlFile").files[0];
+
+      const csvHeaders = [];
+      const jsonKeys = [];
+      const xmlFields = [];
+
+      if (csvFile) {
+        const csvReader = new FileReader();
+        csvReader.onload = function (e) {
+          const csvContents = e.target.result;
+          const parsedData = Papa.parse(csvContents, { header: true }).data;
+          csvHeaders.push(...Object.keys(parsedData[0]));
+          valuesArray1 = csvHeaders; // Assign CSV headers to valuesArray1
+          console.log("CSV Headers:", csvHeaders);
+          // Perform further processing with the CSV headers here
+          displayValues();
+        };
+        csvReader.readAsText(csvFile);
+      }
+
+      if (jsonXmlFile) {
+        console.log("Line 328:", jsonXmlFile.type);
+        if (jsonXmlFile.type == 'application/json') {
+          var reader = new FileReader();
+          reader.readAsText(jsonXmlFile, 'UTF-8');
+          reader.onload = function (evt) {
+            var json = JSON.parse(evt.target.result);
+            valuesArray2 = extractTopLevelHeaders(json);
+            console.log('Json Headers:', valuesArray2);
+            jsonTemplate = storeStructure(json);
+            templatearea.value = JSON.stringify(jsonTemplate, null, 2);
+            displayValues();
+          };
+          reader.onerror = function (evt) {
+            console.error('Error reading the file');
+          };
+        }
+        else if (jsonXmlFile.type == 'text/xml') {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const xml = event.target.result;
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xml, 'text/xml');
+            valuesArray2 = extractHeaders(xmlDoc.documentElement);
+            valuesArray2 = valuesArray2.map(element => element.replace('root.', ''));
+            valuesArray2.shift();
+            xmlTemplate = extractStructure(xmlDoc.documentElement)
+            console.log(xmlTemplate);
+            templatearea.value = xmlTemplate;
+            displayValues();
+          };
+          reader.readAsText(jsonXmlFile);
+
+        }
+      }
+    }
+
+
+
+
+
+    function displayValues() {
+      var column1 = document.getElementById("column1");
+      var column2 = document.getElementById("column2");
+
+      // Clear existing values
+      column1.innerHTML = "";
+      column2.innerHTML = "";
+
+      // Populate column 1
+      for (var i = 0; i < valuesArray1.length; i++) {
+        var value = valuesArray1[i];
+        var pElement = document.createElement("p");
+        pElement.draggable = true;
+        pElement.ondragstart = drag;
+        pElement.id = "value" + (i + 1);
+        pElement.innerText = valuesArray1[i]; // Use the actual value from the array
+        column1.appendChild(pElement);
+      }
+
+      // Populate column 2
+      for (var j = 0; j < valuesArray2.length; j++) {
+        var value = valuesArray2[j];
+        var pElement = document.createElement("p");
+        pElement.draggable = true;
+        pElement.ondragstart = drag;
+        pElement.id = "value" + (j + 1 + valuesArray1.length);
+        pElement.innerText = valuesArray2[j]; // Use the actual value from the array
+        column2.appendChild(pElement);
+      }
+    }
+
+
+
+    let dropAreas = document.querySelectorAll(".drag-image");
+
+    dropAreas.forEach((dropArea) => {
+      let dragText = dropArea.querySelector("h6");
+      let button = dropArea.querySelector("button");
+      let input = dropArea.querySelector("input");
+      let file;
+
+      button.onclick = () => {
+        input.click();
+      };
+
+      input.addEventListener("change", function () {
+        file = this.files[0];
+        dropArea.classList.add("active");
+        viewfile(dropArea);
+      });
+
+      dropArea.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        dropArea.classList.add("active");
+        dragText.textContent = "Release to Upload File";
+      });
+
+      dropArea.addEventListener("dragleave", () => {
+        dropArea.classList.remove("active");
+        dragText.textContent = "Drag & Drop to Upload File";
+      });
+
+      dropArea.addEventListener("drop", (event) => {
+        event.preventDefault();
+        file = event.dataTransfer.files[0];
+        viewfile(dropArea);
+      });
+
+      function viewfile(dropArea) {
+        let fileType = file.type;
+        let validExtensions = ["text/csv", "application/json", "text/xml"];
+        if (validExtensions.includes(fileType)) {
+          let fileReader = new FileReader();
+          fileReader.onload = () => {
+            let fileData = fileReader.result;
+            dropArea.innerHTML = '<p>' + file.name + '</p>';
+          };
+          fileReader.readAsDataURL(file);
+        }
+      }
+    });
+
+
+  </script>
+  <!-- <script src="https://kit.fontawesome.com/a81368914c.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+  <!-- https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js  -->
+
+</body>
+
+</html>

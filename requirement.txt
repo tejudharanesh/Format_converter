@@ -1,0 +1,16 @@
+bcrypt
+bcryptjs
+body-parser
+connect-flash
+crypto
+ejs
+express
+express-ejs-layouts
+express-mysql-session
+express-session
+mysql
+mysql2
+nodemon
+passport
+passport-local
+request

@@ -1,0 +1,25 @@
+
+
+
+<% if(typeof errors != 'undefined') { %>
+    <%    errors.forEach(function(error){ %>
+    <p style="margin-top: 0em;
+    margin-bottom: 0em;
+    margin-left: 5px;
+    color: red;"> <%= error.message %></p>
+     
+    <%    })        %>
+    <% } %>
+
+
+<% if(success_msg!= '') { %>
+    <p style="color: rgb(91, 151, 0);"><%=success_msg %> </p>
+    <% } %>
+
+    
+<% if(error_msg != '') { %>
+    <p style="color: red;"><%= error_msg %> </p>
+    <% } %> 
+    <% if(error != '') { %>
+    <%= error %>
+    <% } %>
